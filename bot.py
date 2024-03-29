@@ -89,7 +89,6 @@ def func(message):
         markup.add(button1, button2, button3)
         bot.send_message(message.chat.id, text="Вы вернулись в главное меню", reply_markup=markup)
     else:
-        print(message_list[-1])
         if message_list[-1] == "Остаток определенного товара":
             id = int(message.text)
             rest = table_controller.rest_of_good(id)

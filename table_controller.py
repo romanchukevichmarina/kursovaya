@@ -94,4 +94,3 @@ def delivery(n):
     if s == "":
         return "Нет поступлений за данный период времени"
     return s
-print(rest_of_good(1128))
