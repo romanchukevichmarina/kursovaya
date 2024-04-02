@@ -41,7 +41,6 @@ def func(message):
         bot.send_message(message.chat.id, text="За какой промежуток вывести поступления?", reply_markup=markup)
     elif(message.text == "За неделю"):
         message_list.append(message.text)
-        print(message_list[-2])
         if message_list[-2] == "Поступления":
             delivery = table_controller.delivery(0)
             bot.send_message(message.chat.id, f'Поступления:\n{ delivery }')
