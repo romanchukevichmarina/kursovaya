@@ -53,7 +53,7 @@ def shipments(n):
     if n == 0:
         warehouse_move = warehouse_move[ datetime.today() - pd.to_datetime(warehouse_move['Дата']) <= timedelta(days=7)]
     elif n == 1:
-        warehouse_move = warehouse_move[warehouse_move['Дата'].dt.month == datetime.now().month]
+        warehouse_move = warehouse_move[datetime.today() - pd.to_datetime(warehouse_move['Дата']) <= timedelta(days=30)]
     warehouse_move = pd.merge(warehouse_move, price, how='left', on='Наименование товара')
     warehouse_move['sum'] = warehouse_move['Стоимость'] * warehouse_move['Отгрузка']
     res = warehouse_move[['Наименование товара', 'Отгрузка', 'sum']]
@@ -76,7 +76,7 @@ def delivery(n):
     if n == 0:
         warehouse_move = warehouse_move[ datetime.today() - pd.to_datetime(warehouse_move['Дата']) <= timedelta(days=7)]
     elif n == 1:
-        warehouse_move = warehouse_move[warehouse_move['Дата'].dt.month == datetime.now().month]
+        warehouse_move = warehouse_move[datetime.today() - pd.to_datetime(warehouse_move['Дата']) <= timedelta(days=30)]
     price = pd.read_excel('table.xlsx', sheet_name='справочник_товаров')
     warehouse_move = pd.merge(warehouse_move, price, how='left', on='Наименование товара')
     warehouse_move['sum'] = warehouse_move['Стоимость'] * warehouse_move['Поступление']
@@ -94,3 +94,4 @@ def delivery(n):
     if s == "":
         return "Нет поступлений за данный период времени"
     return s
+shipments(0)

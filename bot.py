@@ -3,7 +3,7 @@ from telebot import types
 import table_controller
 
 bot = telebot.TeleBot("6729812420:AAEOhJnCnd-kUUrfdQPHYA_UQDpHFpY0sNM")
-message_list = []
+message_list = [" ", " "]
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -42,6 +42,7 @@ def func(message):
     elif(message.text == "За неделю"):
         message_list.append(message.text)
         if message_list[-2] == "Поступления":
+            print(message_list[-2])
             delivery = table_controller.delivery(0)
             bot.send_message(message.chat.id, f'Поступления:\n{ delivery }')
         elif message_list[-2] == "Отгрузки":
