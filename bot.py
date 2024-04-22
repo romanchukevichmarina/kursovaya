@@ -4,19 +4,19 @@ import table_controller
 
 bot = telebot.TeleBot("6729812420:AAEOhJnCnd-kUUrfdQPHYA_UQDpHFpY0sNM")
 message_list = [" ", " "]
-
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("Остатки")
     btn2 = types.KeyboardButton("Отгрузки")
     btn3 = types.KeyboardButton("Поступления")
-    markup.add(btn1, btn2, btn3)
+    btn4 = types.KeyboardButton("Внести поступление/отгрузку")
+    markup.add(btn1, btn2, btn3, btn4)
     bot.send_message(message.chat.id, text="Добрый день, {0.first_name}! Что бы вы хотели узнать?".format(message.from_user), reply_markup=markup)
     
 @bot.message_handler(content_types=['text'])
 def func(message):
-    if(message.text == "Остатки"):
+    if message.text == "Остатки":
         message_list.append(message.text)
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("Общий остаток в рублях")
@@ -25,21 +25,21 @@ def func(message):
         back = types.KeyboardButton("Вернуться в главное меню")
         markup.add(btn1, btn2, btn3, back)
         bot.send_message(message.chat.id, text="Выберите вариант", reply_markup=markup)
-    elif(message.text == "Отгрузки"):
+    elif message.text == "Отгрузки":
         message_list.append(message.text)
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         week = types.KeyboardButton("За неделю")
         month = types.KeyboardButton("За месяц")
         markup.add(week, month)
         bot.send_message(message.chat.id, text="За какой промежуток вывести отгрузки?", reply_markup=markup)
-    elif(message.text == "Поступления"):
+    elif message.text == "Поступления":
         message_list.append(message.text)
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         week = types.KeyboardButton("За неделю")
         month = types.KeyboardButton("За месяц")
         markup.add(week, month)
         bot.send_message(message.chat.id, text="За какой промежуток вывести поступления?", reply_markup=markup)
-    elif(message.text == "За неделю"):
+    elif message.text == "За неделю":
         message_list.append(message.text)
         if message_list[-2] == "Поступления":
             print(message_list[-2])
@@ -52,7 +52,7 @@ def func(message):
         back = types.KeyboardButton("Вернуться в главное меню")
         markup.add(back)
         bot.send_message(message.chat.id, text="Вернитесь в главное меню", reply_markup=markup)
-    elif(message.text == "За месяц"):
+    elif message.text == "За месяц":
         message_list.append(message.text)
         if message_list[-2] == "Поступления":
             delivery = table_controller.delivery(1)
@@ -64,7 +64,21 @@ def func(message):
         back = types.KeyboardButton("Вернуться в главное меню")
         markup.add(back)
         bot.send_message(message.chat.id, text="Вернитесь в главное меню", reply_markup=markup)
-    elif(message.text == "Общий остаток в рублях"):
+    elif message.text == "Внести поступление/отгрузку":
+        message_list.append(message.text)
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn1 = types.KeyboardButton("Поступление")
+        btn2 = types.KeyboardButton("Отгрузка")
+        back = types.KeyboardButton("Вернуться в главное меню")
+        markup.add(btn1, btn2, back)
+        bot.send_message(message.chat.id, text="Выберите вариант", reply_markup=markup)
+    elif message.text == "Поступление":
+        message_list.append(message.text)
+        bot.send_message(message.chat.id, "Введите артикул поступившего товара")
+    elif message.text == "Отгрузка":
+        message_list.append(message.text)
+        bot.send_message(message.chat.id, "Введите артикул отгруженного товара")
+    elif message.text == "Общий остаток в рублях":
         message_list.append(message.text)
         total_rest = table_controller.cash_rest()
         bot.send_message(message.chat.id, f'Остаток товара на складе { total_rest } рублей')
@@ -73,7 +87,16 @@ def func(message):
         markup.add(back)
     elif message.text == "Остаток определенного товара":
         message_list.append(message.text)
-        bot.send_message(message.chat.id, text="Введите артикул товара")
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        yes = types.KeyboardButton("Да")
+        no = types.KeyboardButton("Нет")
+        markup.add(yes, no)
+        bot.send_message(message.chat.id, text="Хотите посмотреть список артиклей?", reply_markup=markup)
+    elif message.text == "Да" and message_list[-1] == "Остаток определенного товара":
+        bot.send_message(message.chat.id, table_controller.article())
+        bot.send_message(message.chat.id, "Введите артикул товара")
+    elif message.text == "Нет" and message_list[-1] == "Остаток определенного товара":
+        bot.send_message(message.chat.id, "Введите артикул товара")
     elif message.text == "Остаток контроллеров":
         message_list.append(message.text)
         cont_rest = table_controller.rest_of_controllers()
@@ -81,19 +104,59 @@ def func(message):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         back = types.KeyboardButton("Вернуться в главное меню")
         markup.add(back)
-    elif (message.text == "Вернуться в главное меню"):
+    elif message.text == "Вернуться в главное меню":
         message_list.append(message.text)
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        button1 = types.KeyboardButton("Остатки")
-        button2 = types.KeyboardButton("Отгрузки")
-        button3 = types.KeyboardButton("Поступления")
-        markup.add(button1, button2, button3)
+        message_list.clear()
+        message_list.append(' ')
+        message_list.append(' ')
+        btn1 = types.KeyboardButton("Остатки")
+        btn2 = types.KeyboardButton("Отгрузки")
+        btn3 = types.KeyboardButton("Поступления")
+        btn4 = types.KeyboardButton("Внести поступление/отгрузку")
+        markup.add(btn1, btn2, btn3, btn4)
         bot.send_message(message.chat.id, text="Вы вернулись в главное меню", reply_markup=markup)
+    elif message.text == "Ввести артикул заново":
+        message_list.append(message.text)
+        bot.send_message(message.chat.id, "Введите артикул товара")
     else:
-        if message_list[-1] == "Остаток определенного товара":
-            id = int(message.text)
-            rest = table_controller.rest_of_good(id)
-            bot.send_message(message.chat.id, f'{rest}')
+        if message_list[-1] == "Остаток определенного товара" or message_list[-1] == "Ввести артикул заново":
+            try:
+                rest = table_controller.rest_of_good(message.text)
+                markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+                again = types.KeyboardButton("Ввести артикул заново")
+                back = types.KeyboardButton("Вернуться в главное меню")
+                markup.add(again, back)
+                bot.send_message(message.chat.id, f'{rest}', reply_markup=markup)
+            except ValueError:
+                bot.send_message(message.chat.id, text="Артикул введен неверно")
+        elif message_list[-1] == "Поступление" or message_list[-1] == "Отгрузка" or message_list[-1] == "Артикул введен неверно, введите заново":
+            article = message.text
+            global name 
+            name = table_controller.is_coorect_article(article)
+            if name == 0:
+                bot.send_message(message.chat.id, text="Артикул введен неверно, введите заново")
+                message_list.append("Артикул введен неверно, введите заново")
+            else:
+                message_list.append("Введите количество")
+                markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+                back = types.KeyboardButton("Вернуться в главное меню")
+                markup.add(back)
+                bot.send_message(message.chat.id, "Введите количество", reply_markup=markup)
+        elif message_list[-1] == "Введите количество" or message_list[-1] == "Количество введено некорректно, введите заново":
+            try:
+                amount = message.text
+                if message_list[-2] == "Поступление":
+                    table_controller.post_new(name, "delivery", amount)
+                elif message_list[-2] == "Отгрузка":
+                    table_controller.post_new(name, "shipment", amount)
+                markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+                back = types.KeyboardButton("Вернуться в главное меню")
+                markup.add(back)
+                bot.send_message(message.chat.id, "Данные внесены", reply_markup=markup)
+            except ValueError:
+                message_list.append("Количество введено некорректно, введите заново")
+                bot.send_message(message.chat.id, text="Количество введено некорректно, введите заново")
         else:
             bot.send_message(message.chat.id, text="Такой команды нет")
 

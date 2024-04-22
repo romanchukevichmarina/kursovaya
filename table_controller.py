@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl import load_workbook
 
 def cash_rest():
     rest = pd.read_excel('table.xlsx', skiprows=3, index_col=1, sheet_name='Склад_остатки')
@@ -8,14 +10,16 @@ def cash_rest():
     rest = pd.merge(rest, price, how='left', on='Наименование товара')
     rest['total'] = rest['Стоимость'] * rest['Остаток']
     total_rest = round(rest['total'].sum())
+    print(rest)
     return total_rest
 
-def rest_of_good(id):
+def rest_of_good(article):
     rest = pd.read_excel('table.xlsx', skiprows=3, sheet_name='Склад_остатки')
     price = pd.read_excel('table.xlsx', sheet_name='справочник_товаров')
     rest = pd.merge(rest, price, how='left', on='Наименование товара')
     rest['total'] = rest['Стоимость'] * rest['Остаток']
-    res = rest.loc[rest['артикул_y'] == id]
+    article = int(article)
+    res = rest.loc[rest['артикул_y'] == article]
     if rest.empty == True:
         s = "Нет товара с таким артикулом"
     elif res['Остаток'].empty:
@@ -24,7 +28,7 @@ def rest_of_good(id):
         s1 = f"{res['Наименование товара']}"
         n = s1[5:(s1.find("\n"))]
         s2 = f"{res['Остаток']}"
-        count = s2[5:(s2.find("\n"))]
+        count = s2[5:(s2.find("."))]
         s3 = f"{res['total']}"
         cost = s3[5:(s3.find("\n"))]
         s = f'{n} \t{count} штук\t{cost} рублей'
@@ -42,7 +46,7 @@ def rest_of_controllers():
         if np.isnan(count['Остаток'][i]) or count['Остаток'][i] == 0:
             continue
         else:
-            s += f"{name['Наименование товара'][i]} {count['Остаток'][i]} штук\n"
+            s += f"{name['Наименование товара'][i]} {round(int(count['Остаток'][i]))} штук\n"
     if s == "":
         return "Нет остатков контроллеров на складе"
     return s
@@ -66,7 +70,7 @@ def shipments(n):
         if np.isnan(count['Отгрузка'][i]) or count['Отгрузка'][i] == 0:
             continue
         else:
-            s += f"{name['Наименование товара'][i]} {count['Отгрузка'][i]} штук {cost['sum'][i]} рублей\n"
+            s += f"{name['Наименование товара'][i]} {round(int(count['Отгрузка'][i]))} штук {cost['sum'][i]} рублей\n"
     if s == "":
         return "Нет отгрузок за данный период времени"
     return s
@@ -90,8 +94,38 @@ def delivery(n):
         if np.isnan(count['Поступление'][i]) or count['Поступление'][i] == 0:
             continue
         else:
-            s += f"{name['Наименование товара'][i]} {count['Поступление'][i]} штук {cost['sum'][i]} рублей\n"
+            s += f"{name['Наименование товара'][i]} {round(int(count['Поступление'][i]))} штук {cost['sum'][i]} рублей\n"
     if s == "":
         return "Нет поступлений за данный период времени"
     return s
-shipments(0)
+
+def article():
+    name = pd.read_excel('table.xlsx', index_col=1, sheet_name='справочник_товаров')
+    s = name['артикул'].to_string()
+    return s
+
+def post_new(name, type, amount):
+    date = datetime.today().strftime('%d.%m.%Y')
+    if type == "shipment":
+        new_data = {'Дата': [f'{date}'], 'Наименование товара': [f'{name}'], 'Поступление': [0], 'Отгрузка': [int(amount)], 'Комментарий': ['Поступление tg-bot']}
+    else:
+        new_data = {'Дата': [f'{date}'], 'Наименование товара': [f'{name}'], 'Поступление': [int(amount)], 'Отгрузка': [0], 'Комментарий': ['Отгрузка tg-bot']}
+    new_data = pd.DataFrame.from_dict(new_data)
+    wb = load_workbook(filename = "table.xlsx")
+    ws = wb["Движение_склад"]
+    for r in dataframe_to_rows(new_data, header=False, index=False):
+        ws.append(r)
+    wb.save("table.xlsx")
+    print('done')
+
+def is_coorect_article(article):
+    try:
+        goods = pd.read_excel('table.xlsx', sheet_name='справочник_товаров')
+        goods = goods.loc[goods['артикул'] == int(article)]
+        s1 = f"{goods['Наименование товара']}"
+        print(goods)
+        if goods.empty == True:
+            return 0
+        return s1[5:(s1.find("\n"))]
+    except:
+        return 0
