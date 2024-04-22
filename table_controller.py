@@ -107,9 +107,9 @@ def article():
 def post_new(name, type, amount):
     date = datetime.today().strftime('%d.%m.%Y')
     if type == "shipment":
-        new_data = {'Дата': [f'{date}'], 'Наименование товара': [f'{name}'], 'Поступление': [0], 'Отгрузка': [int(amount)], 'Комментарий': ['Поступление tg-bot']}
+        new_data = {'Дата': [f'{date}'], 'Наименование товара': [f'{name}'], 'Поступление': [0], 'Отгрузка': [int(amount)], 'Комментарий': ['Отгрузка tg-bot']}
     else:
-        new_data = {'Дата': [f'{date}'], 'Наименование товара': [f'{name}'], 'Поступление': [int(amount)], 'Отгрузка': [0], 'Комментарий': ['Отгрузка tg-bot']}
+        new_data = {'Дата': [f'{date}'], 'Наименование товара': [f'{name}'], 'Поступление': [int(amount)], 'Отгрузка': [0], 'Комментарий': ['Поступление tg-bot']}
     new_data = pd.DataFrame.from_dict(new_data)
     wb = load_workbook(filename = "table.xlsx")
     ws = wb["Движение_склад"]
